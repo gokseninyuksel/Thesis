@@ -1,5 +1,6 @@
 {
-     "mixed_precision" : true,
+    "mode" : "implicit",
+    "mixed_precision" : true,
     "writer_path" : "...",
     "sources_names" : ["vocals"],
     "sources_weights" : [1],

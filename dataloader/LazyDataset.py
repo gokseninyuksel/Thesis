@@ -22,7 +22,7 @@ class LazyDataset(Dataset):
     if is_train:
       self.freq_mask = FrequencyMasking(freq_mask_param= 300)
       self.time_mask = TimeMasking(time_mask_param = 250,p = 1)
-    if mode == 'SVSGAN' or mode == 'explicit':
+    if mode == 'SVSGAN':
       self.sources.append('background')
   def __len__(self):
     return self.length
@@ -57,9 +57,4 @@ class LazyDataset(Dataset):
         mixture_sources[id_source] = self.freq_mask(spec[None,:,:])[0]
     input = torch.concat((mixture_spectrogram[None,:,:],phase_spectrogram[None,:,:]), dim = 0)
     target = torch.concat((mixture_sources,phase_sources), dim = 0)
-    # Calculate the masks. Each channel corresponds to the mask for the source
-    if self.mode == 'explicit':
-      shape = (len(self.sources),input.shape[1], input.shape[2])
-      target = soft_mask(mixture_sources, mixture_spectrogram)
-      target = torch.concat((target,phase_sources),dim = 0)
     return input,target

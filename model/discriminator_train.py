@@ -13,7 +13,7 @@ def train_discriminator(X_batch,y_batch,discriminator,generator,
     optimizer_discriminator.zero_grad(set_to_none=True)
     # Compute the spectrogram from the U-Net, add the extra channel to get (1,1,x,x) dimensions
     with torch.cuda.amp.autocast(enabled = mixed_precision):
-      fakes = generator(spec_inp)
+      fakes = generator(spec_inp) if generator.mode == 'implicit' else torch.multiply(generator(spec_inp),spec_inp)
       discriminator_fakes = discriminator(spec_inp, fakes.detach())
       discriminator_reals = discriminator(spec_inp, reals)
       # Calculate BCELoss Fake for multi source
@@ -38,7 +38,7 @@ def test_discriminator(X_batch,y_batch,discriminator,generator,
     reals = y_batch[:,:nr_sources,:,:]
     with torch.no_grad():
       # Compute the spectrogram from the U-Net, add the extra channel to get (1,1,x,x) dimensions
-      fakes = generator(spec_inp)
+      fakes =  generator(spec_inp) if generator.mode == 'implicit' else torch.multiply(generator(spec_inp),spec_inp)
       discriminator_fakes = discriminator(spec_inp, fakes.detach())
       discriminator_reals = discriminator(spec_inp, reals.detach())
       # Calculate the L2Loss

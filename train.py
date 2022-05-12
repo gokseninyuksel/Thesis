@@ -32,8 +32,8 @@ output_validation =  confjson.output_validation
 output_train =  confjson.output_train
 generator = Implicit(baseline = confjson.baseline_generator, in_channels = 1, nr_sources = nr_sources, dummy_conv_size =  confjson.dummy_generator).to(device)
 discriminator = Discriminator(in_channels = 1, baseline = confjson.baseline_discriminator,nr_sources = nr_sources).to(device)
-train_data = LazyDataset(path = output_train, is_train = True ,sources = sources_names, mode = 'implicit')
-val_data = LazyDataset(path = output_validation, is_train = False, sources = sources_names, mode = 'implicit')
+train_data = LazyDataset(path = output_train, is_train = True ,sources = sources_names, mode = confjson.mode)
+val_data = LazyDataset(path = output_validation, is_train = False, sources = sources_names, mode = confjson.mode)
 g = torch.Generator()
 g.manual_seed(0)
 train_iter = DataLoader(train_data,
