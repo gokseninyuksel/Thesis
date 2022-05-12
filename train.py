@@ -11,6 +11,7 @@ import random
 from utils.config import Configuration
 import settings 
 
+settings.init()
 confjson = Configuration.load_json('conf.json')
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 source_weights = confjson.sources_weights
