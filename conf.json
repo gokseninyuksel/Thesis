@@ -1,0 +1,19 @@
+{
+     "mixed_precision" : true,
+    "writer_path" : "...",
+    "sources_names" : ["vocals"],
+    "sources_weights" : [1],
+    "output_validation" : "/content/MUSDB18_PreProcessed/validation",
+    "output_train" : "/content/MUSDB18_PreProcessed/train",
+    "baseline_generator" : 16,
+    "dummy_generator" : 8,
+    "baseline_discriminator" : 3,
+    "generator_lr" : 0.001,
+    "discriminator_lr": 0.001,
+    "num_workers" : 4,
+    "batch_size" : 24,
+    "alpha" : 100,
+    "epoch" : 100,
+    "generator_weight": "...",
+    "discriminator_weight": "..."
+  }
