@@ -5,7 +5,7 @@ from model.train_GAN import train_GAN
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard.writer import SummaryWriter
-from utils import seed_worker
+from utils.utils import seed_worker
 import numpy as np 
 import random
 from utils.config import Configuration
