@@ -3,7 +3,7 @@ import torch
 from model.generator_train import train_generator,test_generator
 from model.discriminator_train import train_discriminator,test_discriminator
 from torch import nn
-from tqdm import tqdm 
+import tqdm.notebook as tqdm 
 import gc 
 from utils.config import Configuration
 import settings 
