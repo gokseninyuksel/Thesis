@@ -1,0 +1,11 @@
+librosa
+soundfile
+scipy
+soundfile
+musdb
+nussl
+git+https://github.com/source-separation/tutorial
+tensorboard
+mir_eval
+asteroid
+torchinfo

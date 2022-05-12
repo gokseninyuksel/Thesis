@@ -22,7 +22,12 @@ random.seed(0)
 
 output_validation =  confjson.output_validation
 output_train =  confjson.output_train
-generator = Implicit(baseline = confjson.baseline_generator, in_channels = 1, nr_sources = nr_sources, dummy_conv_size =  confjson.dummy_generator).to(device)
+generator = Implicit(baseline = confjson.baseline_generator,
+                     in_channels = 1, 
+                     nr_sources = nr_sources, 
+                     dummy_conv_size =  confjson.dummy_generator,
+                     mode = confjson.mode).to(device)
+print("U_NET with mode {}".format(generator.mode))
 discriminator = Discriminator(in_channels = 1, baseline = confjson.baseline_discriminator,nr_sources = nr_sources).to(device)
 train_data = LazyDataset(path = output_train, is_train = True ,sources = settings.sources_names, mode = confjson.mode)
 val_data = LazyDataset(path = output_validation, is_train = False, sources = settings.sources_names, mode = confjson.mode)
@@ -43,7 +48,7 @@ val_iter = DataLoader(val_data,
                       worker_init_fn=seed_worker,
                       generator=g,
                       pin_memory = True)
-
+print('Created the train and validation itertors with size {}, {}'.format(len(train_data), len(val_data)))
 train_GAN(discriminator,
             generator, 
             train_iter,
