@@ -6,6 +6,8 @@ from utils.config import Configuration
 from utils.utils import seed_worker
 from torch.utils.data import DataLoader
 import settings 
+import torch
+
 settings.init()
 
 jsonconfig = Configuration.load_json('conf.json')
