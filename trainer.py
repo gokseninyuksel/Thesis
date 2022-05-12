@@ -15,7 +15,7 @@ settings.init()
 class SVSGAN(pl.LightningModule):
     def __init__(self):
         super().__init__()
-        self.confjson = Configuration.load_json('conf.json')
+        self.confjson = Configuration.load_json('../conf.json')
         self.generator = Implicit(baseline = self.confjson.baseline_generator,
                      in_channels = 1, 
                      nr_sources = settings.nr_sources, 
@@ -30,6 +30,7 @@ class SVSGAN(pl.LightningModule):
         spec_inp = X_batch[:,:1,:,:]
         return spec_inp
     def training_step(self,batch,batch_idx,optimizer_idx):
+        print("Traning Step")
         X_batch,y_batch = batch 
         spec_inp = X_batch[:,:1,:,:]
         spec_target = y_batch[:,:settings.nr_sources,:,:]
@@ -65,6 +66,7 @@ class SVSGAN(pl.LightningModule):
             output = OrderedDict({"loss": gan_loss, "progress_bar": tqdm_dict, "log": tqdm_dict})
             return output
     def validation_step(self, batch, batch_idx):
+        print("Validation Step")
         X_batch,y_batch = batch 
         spec_inp = X_batch[:,:1,:,:]
         spec_target = y_batch[:,:settings.nr_sources,:,:]
