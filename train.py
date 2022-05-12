@@ -10,6 +10,7 @@ import numpy as np
 import random
 from utils.config import Configuration
 import settings 
+from torch import nn 
 
 settings.init()
 confjson = Configuration.load_json('conf.json')
@@ -22,13 +23,20 @@ random.seed(0)
 
 output_validation =  confjson.output_validation
 output_train =  confjson.output_train
+
 generator = Implicit(baseline = confjson.baseline_generator,
                      in_channels = 1, 
                      nr_sources = nr_sources, 
                      dummy_conv_size =  confjson.dummy_generator,
-                     mode = confjson.mode).to(device)
+                     mode = confjson.mode)
 print("U_NET with mode {}".format(generator.mode))
-discriminator = Discriminator(in_channels = 1, baseline = confjson.baseline_discriminator,nr_sources = nr_sources).to(device)
+discriminator = Discriminator(in_channels = 1, baseline = confjson.baseline_discriminator,nr_sources = nr_sources)
+if torch.cuda.device_count() > 1:
+  print("Let's use", torch.cuda.device_count(), "GPUs!")
+  generator = nn.DataParallel(generator)
+  discriminator = nn.DataParallel(discriminator)
+generator.to(device)
+discriminator.to(device)
 train_data = LazyDataset(path = output_train, is_train = True ,sources = settings.sources_names, mode = confjson.mode)
 val_data = LazyDataset(path = output_validation, is_train = False, sources = settings.sources_names, mode = confjson.mode)
 g = torch.Generator()

@@ -2,7 +2,8 @@
 import torch
 from model.multiSourceLoss import bce_loss_multiSource, l2_loss_multiSource
 import settings
-
+from utils.config import Configuration
+confjson = Configuration.load_json('conf.json')
 def train_generator(X_batch,y_batch,discriminator,generator,
                     optimizer_generator,
                     loss_crossEntropy,loss_L2,
@@ -25,7 +26,7 @@ def train_generator(X_batch,y_batch,discriminator,generator,
     # Set the optimizer generator zero grad
     optimizer_generator.zero_grad(set_to_none=True)
     with torch.cuda.amp.autocast(enabled = mixed_precision):
-      outputs = generator(spec_inp) if generator.mode == 'implicit' else torch.multiply(generator(spec_inp),spec_inp)
+      outputs = generator(spec_inp) if confjson.mode == 'implicit' else torch.multiply(generator(spec_inp),spec_inp)
       discriminator_fakes = discriminator(spec_inp, outputs)
       # Calculate BCELoss for multi source
       bce_loss, _ = bce_loss_multiSource(discriminator_fakes, torch.ones(discriminator_fakes.shape).to(device),source_weights, loss_crossEntropy)
@@ -54,7 +55,7 @@ def test_generator(X_batch,y_batch,discriminator,generator,
     spec_target = y_batch[:,:nr_sources,:,:]
     # Compute the spectrogram from the U-Net, add the extra channel to get (1,1,x,x) dimensions, also get the probabilities from discriminator
     with torch.no_grad():
-        outputs = generator(spec_inp) if generator.mode == 'implicit' else torch.multiply(generator(spec_inp),spec_inp)
+        outputs = generator(spec_inp) if confjson.mode == 'implicit' else torch.multiply(generator(spec_inp),spec_inp)
         discriminator_fakes = discriminator(spec_inp, outputs)
         # Calculate BCELoss for multi source
         with torch.cuda.amp.autocast(enabled = False):

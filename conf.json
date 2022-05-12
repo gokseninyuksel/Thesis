@@ -6,6 +6,7 @@
     "sources_weights" : [1],
     "output_validation" : "/content/MUSDB18_PreProcessed/validation",
     "output_train" : "/content/MUSDB18_PreProcessed/train",
+    "output_test" : "/content/MUSDB18_PreProcessed/test",
     "baseline_generator" : 16,
     "dummy_generator" : 8,
     "baseline_discriminator" : 3,
@@ -16,5 +17,6 @@
     "alpha" : 100,
     "epoch" : 100,
     "generator_weight": "...",
-    "discriminator_weight": "..."
+    "discriminator_weight": "...",
+    "gpus" : 1
   }
