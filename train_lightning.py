@@ -24,7 +24,8 @@ test_data = LazyDataset(path = output_test,
                        is_train = False, 
                        sources = settings.sources_names, 
                        mode = jsonconfig.mode)
-
+g = torch.Generator()
+g.manual_seed(0)
 train_iter = DataLoader(train_data,
                         batch_size = jsonconfig.batch_size, 
                         shuffle = True, 
