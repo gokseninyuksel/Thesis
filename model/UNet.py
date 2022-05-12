@@ -1,5 +1,5 @@
 from numpy import False_
-from Unet_components import * 
+from model.Unet_components import * 
 import torch
 from torch import nn
 

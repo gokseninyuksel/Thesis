@@ -1,11 +1,12 @@
 
 import torch 
-from generator_train import train_generator,test_generator
-from discriminator_train import train_discriminator,test_discriminator
+from model.generator_train import train_generator,test_generator
+from model.discriminator_train import train_discriminator,test_discriminator
 from torch import nn
 from tqdm import tqdm 
 import gc 
 from utils.config import Configuration
+import settings 
 
 confjson = Configuration.load_json('conf.json')
 
@@ -40,8 +41,8 @@ def train_GAN_step(discriminator,generator,
     acc_loss_generator_train_L2 += loss_generator_train_L2.detach()
     acc_loss_generator_train_BCE += loss_generator_train_BCE.detach()
     acc_loss_generator_train_GAN += loss_generator_train_GAN.detach()
-    counter_train += 1
-    writer.add_scalar("Training Generator GAN Loss Step",loss_generator_train_GAN/X_batch.shape[0], counter_train) 
+    settings.counter_train += 1
+    settings.writer.add_scalar("Training Generator GAN Loss Step",loss_generator_train_GAN/X_batch.shape[0], settings.counter_train) 
     # Train the Discriminator
     loss_discriminator_fake, loss_discriminator_real, loss_discriminator_total = train_discriminator( 
                     X_batch,y_batch,
@@ -74,8 +75,8 @@ def train_GAN_step(discriminator,generator,
     acc_loss_generator_test_BCE += loss_generator_test_BCE
     acc_loss_generator_test_GAN += loss_generator_test_GAN
     source_losses_test_acc = source_losses_test+ source_losses_test_acc
-    counter_val += 1
-    writer.add_scalar("Validation Generator GAN Loss Step",loss_generator_test_GAN/X_batch.shape[0], counter_val) 
+    settings.counter_val += 1
+    settings.writer.add_scalar("Validation Generator GAN Loss Step",loss_generator_test_GAN/X_batch.shape[0], settings.counter_val) 
     # Test the Discriminator
     loss_discriminator_test_fake, loss_discriminator_test_real, loss_discriminator_test_total = test_discriminator(
                     X_batch,y_batch,
@@ -93,21 +94,21 @@ def train_GAN_step(discriminator,generator,
   
   scheduler.step(acc_loss_generator_test_L2 / len_val)
   for source_index in range(nr_sources):
-    writer.add_scalar(f"Training Generator {sources_names[source_index]} L2 Loss", source_losses_train_acc[source_index]/ len_train, epoch)
-  writer.add_scalar("Training Generator L2 Loss", acc_loss_generator_train_L2 / len_train, epoch)
-  writer.add_scalar("Training Generator BCE Loss", acc_loss_generator_train_BCE / len_train, epoch)
-  writer.add_scalar("Training Generator GAN Loss", acc_loss_generator_train_GAN / len_train, epoch)
-  writer.add_scalar("Training Discriminator Fake Loss", acc_loss_discriminator_fake / len_train, epoch)
-  writer.add_scalar("Training Discriminator Real Loss", acc_loss_discriminator_real / len_train, epoch)
-  writer.add_scalar("Training Discriminator Total Loss", acc_loss_discriminator_total / len_train, epoch) 
+    settings.writer.add_scalar(f"Training Generator {settings.sources_names[source_index]} L2 Loss", source_losses_train_acc[source_index]/ len_train, epoch)
+  settings.writer.add_scalar("Training Generator L2 Loss", acc_loss_generator_train_L2 / len_train, epoch)
+  settings.writer.add_scalar("Training Generator BCE Loss", acc_loss_generator_train_BCE / len_train, epoch)
+  settings.writer.add_scalar("Training Generator GAN Loss", acc_loss_generator_train_GAN / len_train, epoch)
+  settings.writer.add_scalar("Training Discriminator Fake Loss", acc_loss_discriminator_fake / len_train, epoch)
+  settings.writer.add_scalar("Training Discriminator Real Loss", acc_loss_discriminator_real / len_train, epoch)
+  settings.writer.add_scalar("Training Discriminator Total Loss", acc_loss_discriminator_total / len_train, epoch) 
   for source_index in range(nr_sources):
-    writer.add_scalar(f"Validation Generator {sources_names[source_index]} L2 Loss", source_losses_test_acc[source_index]/ len_val, epoch)
-  writer.add_scalar("Validation Generator L2 Loss", acc_loss_generator_test_L2 / len_val, epoch)
-  writer.add_scalar("Validation Generator BCE Loss", acc_loss_generator_test_BCE / len_val, epoch)
-  writer.add_scalar("Validation Generator GAN Loss", acc_loss_generator_test_GAN / len_val, epoch)
-  writer.add_scalar("Validation Discriminator Fake Loss", acc_loss_discriminator_test_fake / len_val, epoch)
-  writer.add_scalar("Validation Discriminator Real Loss", acc_loss_discriminator_test_real / len_val, epoch)
-  writer.add_scalar("Validation Discriminator Total Loss", acc_loss_discriminator_test_total / len_val, epoch) 
+    settings.writer.add_scalar(f"Validation Generator {settings.sources_names[source_index]} L2 Loss", source_losses_test_acc[source_index]/ len_val, epoch)
+  settings.writer.add_scalar("Validation Generator L2 Loss", acc_loss_generator_test_L2 / len_val, epoch)
+  settings.writer.add_scalar("Validation Generator BCE Loss", acc_loss_generator_test_BCE / len_val, epoch)
+  settings.writer.add_scalar("Validation Generator GAN Loss", acc_loss_generator_test_GAN / len_val, epoch)
+  settings.writer.add_scalar("Validation Discriminator Fake Loss", acc_loss_discriminator_test_fake / len_val, epoch)
+  settings.writer.add_scalar("Validation Discriminator Real Loss", acc_loss_discriminator_test_real / len_val, epoch)
+  settings.writer.add_scalar("Validation Discriminator Total Loss", acc_loss_discriminator_test_total / len_val, epoch) 
 
 
 def train_GAN(discriminator,generator, 

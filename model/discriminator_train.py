@@ -1,12 +1,11 @@
 import torch
-from multiSourceLoss import bce_loss_multiSource, l2_loss_multiSource
-
+from model.multiSourceLoss import bce_loss_multiSource, l2_loss_multiSource
+import settings 
 def train_discriminator(X_batch,y_batch,discriminator,generator,
                    optimizer_discriminator,
                    loss_crossEntropy,
                    device,source_weights, nr_sources = 1,mixed_precision = True):
 
-    global scaler
     # Input spectrogram and target spectrogram
     spec_inp = X_batch[:,:1,:,:]
     reals = y_batch[:,:nr_sources,:,:]
@@ -21,10 +20,10 @@ def train_discriminator(X_batch,y_batch,discriminator,generator,
       real_loss, _ = bce_loss_multiSource(discriminator_reals, torch.ones(discriminator_fakes.shape).to(device),source_weights, loss_crossEntropy)
       gan_loss = (fake_loss + real_loss) / 2
     # Back-propagate the loss
-    scaler.scale(gan_loss).backward()
+    settings.scaler.scale(gan_loss).backward()
     # Update weights
-    scaler.step(optimizer_discriminator)
-    scaler.update()
+    settings.scaler.step(optimizer_discriminator)
+    settings.scaler.update()
     loss_discriminator_fake = fake_loss.detach()
     loss_discriminator_real = real_loss.detach()
     loss_discriminator_total = gan_loss.detach()

@@ -1,7 +1,7 @@
 
 import torch
-from multiSourceLoss import bce_loss_multiSource, l2_loss_multiSource
-
+from model.multiSourceLoss import bce_loss_multiSource, l2_loss_multiSource
+import settings
 
 def train_generator(X_batch,y_batch,discriminator,generator,
                     optimizer_generator,
@@ -18,7 +18,7 @@ def train_generator(X_batch,y_batch,discriminator,generator,
     loss_L2: Loss object from torch.nn.MSELoss()
     source_weights: Specify the weighted multi source.
     '''
-    global scaler
+
     # Input spectrogram and targets spectrogram
     spec_inp = X_batch[:,:1,:,:]
     spec_target = y_batch[:,:nr_sources,:,:]
@@ -33,13 +33,13 @@ def train_generator(X_batch,y_batch,discriminator,generator,
       l2_loss,source_losses_l2 = l2_loss_multiSource(outputs,spec_target,source_weights,loss_L2)
       gan_loss = bce_loss + alpha * l2_loss
     # Back-propagate the loss
-    scaler.scale(gan_loss).backward()
+    settings.scaler.scale(gan_loss).backward()
     # Update weights
-    scaler.step(optimizer_generator)
+    settings.scaler.step(optimizer_generator)
     loss_generator_L2 = l2_loss.detach()
     loss_generator_BCE = bce_loss.detach()
     loss_generator_GAN = gan_loss.detach()
-    scaler.update()
+    settings.scaler.update()
 
 
     return loss_generator_L2, loss_generator_BCE, loss_generator_GAN, source_losses_l2

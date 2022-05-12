@@ -9,21 +9,12 @@ from utils import seed_worker
 import numpy as np 
 import random
 from utils.config import Configuration
-
+import settings 
 
 confjson = Configuration.load_json('conf.json')
-global writer,sources_names,scaler
-global counter_train,counter_val
-
-mixed_precision = True
-counter_train,counter_val = 0,0
-scaler = torch.cuda.amp.GradScaler(init_scale=10000,enabled = mixed_precision)
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-
-writer = SummaryWriter(confjson.writer_path,flush_secs = 5)
-sources_names = confjson.sources_names
 source_weights = confjson.sources_weights
-nr_sources = len(sources_names)
+nr_sources = len(settings.sources_names)
 torch.manual_seed(0)
 np.random.seed(0)
 random.seed(0)
@@ -32,8 +23,8 @@ output_validation =  confjson.output_validation
 output_train =  confjson.output_train
 generator = Implicit(baseline = confjson.baseline_generator, in_channels = 1, nr_sources = nr_sources, dummy_conv_size =  confjson.dummy_generator).to(device)
 discriminator = Discriminator(in_channels = 1, baseline = confjson.baseline_discriminator,nr_sources = nr_sources).to(device)
-train_data = LazyDataset(path = output_train, is_train = True ,sources = sources_names, mode = confjson.mode)
-val_data = LazyDataset(path = output_validation, is_train = False, sources = sources_names, mode = confjson.mode)
+train_data = LazyDataset(path = output_train, is_train = True ,sources = settings.sources_names, mode = confjson.mode)
+val_data = LazyDataset(path = output_validation, is_train = False, sources = settings.sources_names, mode = confjson.mode)
 g = torch.Generator()
 g.manual_seed(0)
 train_iter = DataLoader(train_data,
@@ -58,6 +49,6 @@ train_GAN(discriminator,
             val_iter,
             confjson.epoch, 
             device,
-            mixed_precision = mixed_precision
+            mixed_precision = confjson.mixed_precision,
             source_weights = source_weights,lr_generator = confjson.generator_lr, lr_discriminator = confjson.discriminator_lr, nr_sources = nr_sources,alpha = confjson.alpha
             )
