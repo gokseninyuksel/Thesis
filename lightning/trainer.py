@@ -8,9 +8,14 @@ from utils.config import Configuration
 from model.multiSourceLoss import bce_loss_multiSource,l2_loss_multiSource
 import settings 
 from collections import OrderedDict
-from utils.utils import weights_init_, seed_worker
+from utils.utils import weights_init_, seed_worker, set_momentum
 from dataloader.LazyDataset import LazyDataset
 
+def set_momentum(net,value):
+    for a in net.discriminator.children():
+            for b in a.children():
+                if isinstance(b, nn.BatchNorm2d):
+                    b.momentum = value
 
 class SVSGAN(pl.LightningModule):
     def __init__(self):
@@ -28,6 +33,8 @@ class SVSGAN(pl.LightningModule):
         self.loss_crossEntropy = nn.BCEWithLogitsLoss()
         self.generator.apply(weights_init_)
         self.discriminator.apply(weights_init_)
+        set_momentum(self.generator, 0.1)
+        set_momentum(self.discriminator, 0.1)
     def forward(self,X_batch):
         spec_inp = X_batch[:,:1,:,:]
         return spec_inp
