@@ -1,26 +1,28 @@
 import pytorch_lightning as pl
 import torch
 from torch import nn
+from torch.utils.data import DataLoader
 from model.UNet import UNet as Implicit
 from model.Discriminator import Discriminator
 from utils.config import Configuration
 from model.multiSourceLoss import bce_loss_multiSource,l2_loss_multiSource
 import settings 
 from collections import OrderedDict
-from utils.utils import weights_init_
+from utils.utils import weights_init_, seed_worker
+from dataloader.LazyDataset import LazyDataset
 
-
-settings.init()
 
 class SVSGAN(pl.LightningModule):
     def __init__(self):
         super().__init__()
         self.confjson = Configuration.load_json('conf.json')
+        # Generator module for the GAN.
         self.generator = Implicit(baseline = self.confjson.baseline_generator,
                      in_channels = 1, 
                      nr_sources = len(settings.sources_names), 
                      dummy_conv_size =  self.confjson.dummy_generator,
                      mode = self.confjson.mode)
+        # Discriminator module for the GAN
         self.discriminator =  Discriminator(in_channels = 1, baseline = self.confjson.baseline_discriminator,nr_sources = len(settings.sources_names))
         self.lossL2 = nn.MSELoss()
         self.loss_crossEntropy = nn.BCEWithLogitsLoss()
@@ -69,6 +71,8 @@ class SVSGAN(pl.LightningModule):
         X_batch,y_batch = batch 
         spec_inp = X_batch[:,:1,:,:]
         spec_target = y_batch[:,:settings.nr_sources,:,:]
+
+        # Validation step for the generator
         outputs = self.generator(spec_inp) if self.confjson.mode == 'implicit' else torch.multiply(self.generator(spec_inp),spec_inp)
         discriminator_fakes = self.discriminator(spec_inp, outputs)
         fakes = torch.ones(discriminator_fakes.shape)
@@ -81,6 +85,22 @@ class SVSGAN(pl.LightningModule):
         self.log('validation_gan_loss', gan_loss)
         self.log('validation_l2_loss', l2_loss)
         self.log('validation_bce_loss', bce_loss)
+
+        # Validation step for the discrimiantor
+        fakes = self.generator(spec_inp) if self.confjson.mode == 'implicit' else torch.multiply(self.generator(spec_inp),spec_inp)
+        discriminator_fakes = self.discriminator(spec_inp, fakes.detach())
+        discriminator_reals = self.discriminator(spec_inp, spec_target)
+        # Calculate BCELoss Fake for multi source
+        zeros = torch.zeros(discriminator_fakes.shape)
+        zeros = zeros.type_as(X_batch)
+        ones = torch.ones(discriminator_fakes.shape)
+        ones = ones.type_as(X_batch)
+        fake_loss, _ = bce_loss_multiSource(discriminator_fakes, zeros,self.confjson.source_weights, self.loss_crossEntropy)
+        real_loss, _ = bce_loss_multiSource(discriminator_reals, ones,self.confjson.source_weights, self.loss_crossEntropy)
+        gan_loss = (fake_loss + real_loss) / 2
+        self.log('training_gan_loss_discriminator', gan_loss)
+
+
     def test_step(self,batch,batch_idx):
         X_batch,y_batch = batch 
         spec_inp = X_batch[:,:1,:,:]
@@ -107,10 +127,55 @@ class SVSGAN(pl.LightningModule):
                                                                 threshold=0.001,
                                                                 verbose = True)
         return [optimizer_discriminator, optimizer_generator], [scheduler]
+
     def training_epoch_end(self, outputs):
         sch = self.lr_schedulers()
-
         # If the selected scheduler is a ReduceLROnPlateau scheduler.
         if isinstance(sch, torch.optim.lr_scheduler.ReduceLROnPlateau):
             sch.step(self.trainer.callback_metrics["validation_gan_loss"])
-    
+    def train_dataloader(self):
+        train_data = LazyDataset(path = self.confjson.output_train,
+                                 is_train = True,
+                                 sources = settings.sources_names,
+                                 mode = self.confjson.mode)
+        g = torch.Generator()
+        g.manual_seed(0)
+        return  DataLoader(train_data,
+                        batch_size = self.confjson.batch_size, 
+                        shuffle = True, 
+                        num_workers = self.confjson.num_workers, 
+                        worker_init_fn=seed_worker,
+                        generator= g,
+                        pin_memory = True,
+                        )
+    def val_dataloader(self):
+        val_data = LazyDataset(path = self.confjson.output_validation,
+                                 is_train = False,
+                                 sources = settings.sources_names,
+                                 mode = self.confjson.mode)
+        g = torch.Generator()
+        g.manual_seed(0)
+        return  DataLoader(val_data,
+                        batch_size = self.confjson.batch_size, 
+                        shuffle = False, 
+                        num_workers = self.confjson.num_workers, 
+                        worker_init_fn=seed_worker,
+                        generator= g,
+                        pin_memory = True,
+                        )
+
+    def test_dataloader(self):
+        test_data = LazyDataset(path = self.confjson.output_test,
+                                 is_train = False,
+                                 sources = settings.sources_names,
+                                 mode = self.confjson.mode)
+        g = torch.Generator()
+        g.manual_seed(0)
+        return  DataLoader(test_data,
+                        batch_size = self.confjson.batch_size, 
+                        shuffle = False, 
+                        num_workers = self.confjson.num_workers, 
+                        worker_init_fn=seed_worker,
+                        generator= g,
+                        pin_memory = True,
+                        )  
