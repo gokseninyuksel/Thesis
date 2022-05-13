@@ -24,10 +24,11 @@ logger = TensorBoardLogger(
 trainer = Trainer(gpus=jsonconfig.gpus, 
                   accelerator="gpu",
                   devices=jsonconfig.gpus,
-                  precision = 16, 
+                  precision = 32, 
                   checkpoint_callback=checkpoint,
                   max_epochs=jsonconfig.epoch, 
                   progress_bar_refresh_rate=20,
-                  logger=logger
+                  logger=logger,
+                  log_every_n_steps=5
                    )
 trainer.fit(model)
