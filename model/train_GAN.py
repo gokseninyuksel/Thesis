@@ -50,6 +50,7 @@ def train_GAN_step(discriminator,generator,
                     optimizer_discriminator,
                     loss_crossEntropy,
                     device = device, 
+                    mixed_precision=mixed_precision,
                     source_weights = source_weights, nr_sources = nr_sources)
     
     acc_loss_discriminator_fake += loss_discriminator_fake.detach()
@@ -69,7 +70,6 @@ def train_GAN_step(discriminator,generator,
                     discriminator,generator,
                     optimizer_generator,
                     loss_crossEntropy,loss_L2,
-                    mixed_precision = mixed_precision,
                    device = device, source_weights = source_weights,alpha = alpha, nr_sources = nr_sources)
     acc_loss_generator_test_L2 += loss_generator_test_L2
     acc_loss_generator_test_BCE += loss_generator_test_BCE
