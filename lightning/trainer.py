@@ -78,8 +78,9 @@ class SVSGAN(pl.LightningModule):
         X_batch,y_batch = batch 
         spec_inp = X_batch[:,:1,:,:]
         spec_target = y_batch[:,:settings.nr_sources,:,:]
-
         # Validation step for the generator
+        self.generator.eval()
+        self.discriminator.eval()
         outputs = self.generator(spec_inp) if self.confjson.mode == 'implicit' else torch.multiply(self.generator(spec_inp),spec_inp)
         discriminator_fakes = self.discriminator(spec_inp, outputs)
         fakes = torch.ones(discriminator_fakes.shape)
