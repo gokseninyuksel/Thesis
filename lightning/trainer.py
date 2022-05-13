@@ -32,6 +32,11 @@ class SVSGAN(pl.LightningModule):
     def forward(self,X_batch):
         spec_inp = X_batch[:,:1,:,:]
         return spec_inp
+
+
+    # ---------------------
+    # TRAINING STEP
+    # ---------------------
     def training_step(self,batch,batch_idx,optimizer_idx):
         print("Traning Step")
         X_batch,y_batch = batch 
@@ -66,6 +71,10 @@ class SVSGAN(pl.LightningModule):
             gan_loss = (fake_loss + real_loss) / 2
             self.log('training_gan_loss_discriminator', gan_loss)
             return gan_loss
+    
+    # ---------------------
+    #  VALIDATION STEP
+    # ---------------------
     def validation_step(self, batch, batch_idx):
         print("Validation Step")
         X_batch,y_batch = batch 
@@ -100,7 +109,9 @@ class SVSGAN(pl.LightningModule):
         gan_loss = (fake_loss + real_loss) / 2
         self.log('training_gan_loss_discriminator', gan_loss)
 
-
+    # ---------------------
+    #  TEST STEP
+    # ---------------------
     def test_step(self,batch,batch_idx):
         X_batch,y_batch = batch 
         spec_inp = X_batch[:,:1,:,:]
@@ -116,7 +127,11 @@ class SVSGAN(pl.LightningModule):
         gan_loss = bce_loss + self.confjson.alpha * l2_loss
         self.log('test_gan_loss', gan_loss)
         self.log('test_l2_loss', l2_loss)
-        self.log('test_bce_loss', bce_loss)       
+        self.log('test_bce_loss', bce_loss)     
+
+    # ---------------------
+    #  OPTIMIZER CONFIGURATION
+    # ---------------------  
     def configure_optimizers(self):
         optimizer_discriminator = torch.optim.Adam(self.discriminator.parameters(),lr = self.confjson.discriminator_lr)
         optimizer_generator = torch.optim.Adam(self.generator.parameters(), lr = self.confjson.generator_lr, weight_decay = 0.01)

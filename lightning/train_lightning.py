@@ -1,4 +1,4 @@
-from trainer import SVSGAN
+from lightning.trainer import SVSGAN
 from pytorch_lightning import Trainer
 from utils.config import Configuration
 import settings 
