@@ -42,7 +42,6 @@ class SVSGAN(pl.LightningModule):
         spec_target = y_batch[:,:settings.nr_sources,:,:]
         # Train Generator
         if optimizer_idx == 0:
-            print("Training Generator")
             outputs = self.generator(spec_inp) if self.confjson.mode == 'implicit' else torch.multiply(self.generator(spec_inp),spec_inp)
             discriminator_fakes = self.discriminator(spec_inp, outputs)
             fakes = torch.ones(discriminator_fakes.shape)
@@ -50,7 +49,7 @@ class SVSGAN(pl.LightningModule):
             # Calculate BCELoss for multi source
             bce_loss, _ = bce_loss_multiSource(discriminator_fakes,fakes, self.confjson.source_weights, self.loss_crossEntropy)
             # Calculate L2Loss for multi source
-            l2_loss,source_losses_l2 = l2_loss_multiSource(outputs,spec_target,self.confjson.source_weights,self.lossL2)
+            l2_loss, _ = l2_loss_multiSource(outputs,spec_target,self.confjson.source_weights,self.lossL2)
             gan_loss = bce_loss + self.confjson.alpha * l2_loss
             self.log('training_gan_loss', gan_loss)
             self.log('training_bce_loss', bce_loss)
@@ -58,10 +57,8 @@ class SVSGAN(pl.LightningModule):
             self.logger.experiment.add_scalars('loss gan', {'train': gan_loss},self.global_step) 
             self.logger.experiment.add_scalars('loss bce', {'train': bce_loss},self.global_step)
             self.logger.experiment.add_scalars('loss l2', {'train': l2_loss},self.global_step)
-
             return gan_loss
         if optimizer_idx == 1:
-            print("Training Discriminator")
             fakes = self.generator(spec_inp) if self.confjson.mode == 'implicit' else torch.multiply(self.generator(spec_inp),spec_inp)
             discriminator_fakes = self.discriminator(spec_inp, fakes.detach())
             discriminator_reals = self.discriminator(spec_inp, spec_target)
@@ -137,6 +134,7 @@ class SVSGAN(pl.LightningModule):
         self.log('test_l2_loss', l2_loss)
         self.log('test_bce_loss', bce_loss)     
 
+
     # ---------------------
     #  OPTIMIZER CONFIGURATION
     # ---------------------  
@@ -150,7 +148,7 @@ class SVSGAN(pl.LightningModule):
                                                                 threshold=0.001,
                                                                 verbose = True)
         lr_schedulers = {"scheduler": scheduler, "monitor": "validation_gan_loss"}
-        return [optimizer_discriminator, optimizer_generator], lr_schedulers
+        return [optimizer_generator,optimizer_discriminator], lr_schedulers
     def train_dataloader(self):
         train_data = LazyDataset(path = self.confjson.output_train,
                                  is_train = True,

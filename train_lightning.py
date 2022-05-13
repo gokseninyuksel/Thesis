@@ -22,6 +22,8 @@ logger = TensorBoardLogger(
         name='lightning_logs'
     )
 trainer = Trainer(gpus=jsonconfig.gpus, 
+                  accelerator="gpu",
+                  devices=jsonconfig.gpus,
                   precision = 16, 
                   checkpoint_callback=checkpoint,
                   max_epochs=jsonconfig.epoch, 
