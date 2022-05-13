@@ -10,13 +10,6 @@ import settings
 from collections import OrderedDict
 from utils.utils import weights_init_, seed_worker, set_momentum
 from dataloader.LazyDataset import LazyDataset
-
-def set_momentum(net,value):
-    for a in net.discriminator.children():
-            for b in a.children():
-                if isinstance(b, nn.BatchNorm2d):
-                    b.momentum = value
-
 class SVSGAN(pl.LightningModule):
     def __init__(self):
         super().__init__()
