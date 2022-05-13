@@ -31,6 +31,7 @@ generator = Implicit(baseline = confjson.baseline_generator,
                      mode = confjson.mode)
 print("U_NET with mode {}".format(generator.mode))
 print("Using Mixed Precision:{}".format(confjson.mixed_precision))
+print("Training on sources: {}".format(confjson.source_names))
 discriminator = Discriminator(in_channels = 1, baseline = confjson.baseline_discriminator,nr_sources = nr_sources)
 if torch.cuda.device_count() > 1:
   print("Let's use", torch.cuda.device_count(), "GPUs!")
@@ -52,7 +53,7 @@ train_iter = DataLoader(train_data,
 )
 val_iter = DataLoader(val_data,
                       batch_size = 24,
-                      shuffle = True, 
+                      shuffle = False, 
                       num_workers = 4,
                       worker_init_fn=seed_worker,
                       generator=g,
