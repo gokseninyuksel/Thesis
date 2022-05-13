@@ -54,9 +54,6 @@ class SVSGAN(pl.LightningModule):
             self.log('training_gan_loss', gan_loss)
             self.log('training_bce_loss', bce_loss)
             self.log('training_l2_loss', l2_loss)
-            self.logger.experiment.add_scalars('loss gan', {'train': gan_loss},self.global_step) 
-            self.logger.experiment.add_scalars('loss bce', {'train': bce_loss},self.global_step)
-            self.logger.experiment.add_scalars('loss l2', {'train': l2_loss},self.global_step)
             return gan_loss
         if optimizer_idx == 1:
             fakes = self.generator(spec_inp) if self.confjson.mode == 'implicit' else torch.multiply(self.generator(spec_inp),spec_inp)
@@ -71,7 +68,6 @@ class SVSGAN(pl.LightningModule):
             real_loss, _ = bce_loss_multiSource(discriminator_reals, ones,self.confjson.source_weights, self.loss_crossEntropy)
             gan_loss = (fake_loss + real_loss) / 2
             self.log('training_gan_loss_discriminator', gan_loss)
-            self.logger.experiment.add_scalars('loss gan discriminator', {'train': gan_loss},self.global_step) 
             return gan_loss
     
     # ---------------------
@@ -88,7 +84,6 @@ class SVSGAN(pl.LightningModule):
         fakes = torch.ones(discriminator_fakes.shape)
         fakes = fakes.type_as(X_batch)
         # Calculate BCELoss for multi source
-        print(self.confjson.source_weights)
         bce_loss, _ = bce_loss_multiSource(discriminator_fakes,fakes, self.confjson.source_weights, self.loss_crossEntropy)
         # Calculate L2Loss for multi source
         l2_loss,source_losses_l2 = l2_loss_multiSource(outputs,spec_target,self.confjson.source_weights,self.lossL2)
@@ -96,9 +91,6 @@ class SVSGAN(pl.LightningModule):
         self.log('validation_gan_loss', gan_loss)
         self.log('validation_l2_loss', l2_loss)
         self.log('validation_bce_loss', bce_loss)
-        self.logger.experiment.add_scalars('loss gan', {'validation': gan_loss},self.global_step) 
-        self.logger.experiment.add_scalars('loss bce', {'validation': bce_loss},self.global_step)
-        self.logger.experiment.add_scalars('loss l2', {'validation': l2_loss},self.global_step)
         # Validation step for the discrimiantor
         fakes = self.generator(spec_inp) if self.confjson.mode == 'implicit' else torch.multiply(self.generator(spec_inp),spec_inp)
         discriminator_fakes = self.discriminator(spec_inp, fakes.detach())
@@ -112,8 +104,6 @@ class SVSGAN(pl.LightningModule):
         real_loss, _ = bce_loss_multiSource(discriminator_reals, ones,self.confjson.source_weights, self.loss_crossEntropy)
         gan_loss = (fake_loss + real_loss) / 2
         self.log('training_gan_loss_discriminator', gan_loss)
-        self.logger.experiment.add_scalars('loss gan discriminator', {'validation': gan_loss},self.global_step) 
-
     # ---------------------
     #  TEST STEP
     # ---------------------
