@@ -91,7 +91,7 @@ def weights_init_(m):
             # Init with xavier weights
             torch.nn.init.xavier_normal_(m.weight)
 def set_momentum(net,value):
-    for a in net.discriminator.children():
+    for a in net.children():
             for b in a.children():
                 if isinstance(b, nn.BatchNorm2d):
                     b.momentum = value
