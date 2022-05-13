@@ -8,7 +8,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 settings.init()
 jsonconfig = Configuration.load_json('conf.json')
 model = SVSGAN()
-checkpoint_path = "..."
+checkpoint_path = ".."
 checkpoint = ModelCheckpoint(
             checkpoint_path, monitor='validation_gan_loss', mode='min', save_top_k=1, verbose=1, save_last=True)
 logger = TensorBoardLogger(

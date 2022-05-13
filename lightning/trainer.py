@@ -87,7 +87,8 @@ class SVSGAN(pl.LightningModule):
         fakes = torch.ones(discriminator_fakes.shape)
         fakes = fakes.type_as(X_batch)
         # Calculate BCELoss for multi source
-        bce_loss, _ = bce_loss_multiSource(discriminator_fakes,fakes, self.source_weights, self.loss_crossEntropy)
+        print(self.confjson.source_weights)
+        bce_loss, _ = bce_loss_multiSource(discriminator_fakes,fakes, self.confjson.source_weights, self.loss_crossEntropy)
         # Calculate L2Loss for multi source
         l2_loss,source_losses_l2 = l2_loss_multiSource(outputs,spec_target,self.confjson.source_weights,self.lossL2)
         gan_loss = bce_loss + self.confjson.alpha * l2_loss
@@ -121,7 +122,7 @@ class SVSGAN(pl.LightningModule):
         fakes = torch.ones(discriminator_fakes.shape)
         fakes = fakes.type_as(X_batch)
         # Calculate BCELoss for multi source
-        bce_loss, _ = bce_loss_multiSource(discriminator_fakes,fakes, self.source_weights, self.loss_crossEntropy)
+        bce_loss, _ = bce_loss_multiSource(discriminator_fakes,fakes, self.confjson.source_weights, self.loss_crossEntropy)
         # Calculate L2Loss for multi source
         l2_loss,source_losses_l2 = l2_loss_multiSource(outputs,spec_target,self.confjson.source_weights,self.lossL2)
         gan_loss = bce_loss + self.confjson.alpha * l2_loss
