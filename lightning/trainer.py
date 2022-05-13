@@ -58,10 +58,9 @@ class SVSGAN(pl.LightningModule):
             # Calculate L2Loss for multi source
             l2_loss, _ = l2_loss_multiSource(outputs,spec_target,self.confjson.source_weights,self.lossL2)
             gan_loss = bce_loss + self.confjson.alpha * l2_loss
-            self.log('training_gan_loss_step', gan_loss)
-            self.log('avg_gan_loss', gan_loss,  on_step=False, on_epoch=True)
-            self.log('training_bce_loss', bce_loss)
-            self.log('training_l2_loss', l2_loss)
+            self.log('training_gan_loss', gan_loss,  on_step=True, on_epoch=True)
+            self.log('training_bce_loss', bce_loss,on_step=True, on_epoch=True)
+            self.log('training_l2_loss', l2_loss,on_step=True, on_epoch=True)
             return gan_loss
         if optimizer_idx == 1:
             fakes = self.generator(spec_inp) if self.confjson.mode == 'implicit' else torch.multiply(self.generator(spec_inp),spec_inp)
@@ -97,10 +96,9 @@ class SVSGAN(pl.LightningModule):
         # Calculate L2Loss for multi source
         l2_loss,_ = l2_loss_multiSource(outputs,spec_target,self.confjson.source_weights,self.lossL2)
         gan_loss = bce_loss + self.confjson.alpha * l2_loss
-        self.log('validation_gan_loss', gan_loss)
-        self.log('avg_validation_gan_loss', gan_loss, on_step = False, on_epoch = True)
-        self.log('validation_l2_loss', l2_loss)
-        self.log('validation_bce_loss', bce_loss)
+        self.log('validation_gan_loss', gan_loss, on_step = True, on_epoch = True)
+        self.log('validation_l2_loss', l2_loss, on_step = True, on_epoch = True)
+        self.log('validation_bce_loss', bce_loss, on_step = True, on_epoch = True)
         # Validation step for the discrimiantor
         fakes = self.generator(spec_inp) if self.confjson.mode == 'implicit' else torch.multiply(self.generator(spec_inp),spec_inp)
         discriminator_fakes = self.discriminator(spec_inp, fakes.detach())
@@ -113,7 +111,7 @@ class SVSGAN(pl.LightningModule):
         fake_loss, _ = bce_loss_multiSource(discriminator_fakes, zeros,self.confjson.source_weights, self.loss_crossEntropy)
         real_loss, _ = bce_loss_multiSource(discriminator_reals, ones,self.confjson.source_weights, self.loss_crossEntropy)
         gan_loss = (fake_loss + real_loss) / 2
-        self.log('training_gan_loss_discriminator', gan_loss)
+        self.log('training_gan_loss_discriminator', gan_loss, on_step = True, on_epoch = True)
     # ---------------------
     #  TEST STEP
     # ---------------------
