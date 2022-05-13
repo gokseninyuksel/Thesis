@@ -2,7 +2,7 @@ from lightning.trainer import SVSGAN
 from pytorch_lightning import Trainer
 from utils.config import Configuration
 import settings 
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.utilities.seed import seed_everything
 import torch 
@@ -25,9 +25,8 @@ trainer = Trainer(gpus=jsonconfig.gpus,
                   accelerator="gpu",
                   devices=jsonconfig.gpus,
                   precision = 32, 
-                  checkpoint_callback=checkpoint,
-                  max_epochs=jsonconfig.epoch, 
-                  progress_bar_refresh_rate=20,
+                  enable_checkpointing=checkpoint,
+                  max_epochs=jsonconfig.epoch,
                   logger=logger,
                   log_every_n_steps=5
                    )
