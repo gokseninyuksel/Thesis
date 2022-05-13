@@ -61,9 +61,9 @@ class SVSGAN(pl.LightningModule):
             discriminator_fakes = self.discriminator(spec_inp, fakes.detach())
             discriminator_reals = self.discriminator(spec_inp, spec_target)
             # Calculate BCELoss Fake for multi source
-            zeros = torch.zeros(discriminator_fakes.shape,requires_grad = True)
+            zeros = torch.zeros(discriminator_fakes.shape)
             zeros = zeros.type_as(X_batch)
-            ones = torch.ones(discriminator_fakes.shape, requires_grad = True)
+            ones = torch.ones(discriminator_fakes.shape)
             ones = ones.type_as(X_batch)
             fake_loss, _ = bce_loss_multiSource(discriminator_fakes, zeros,self.confjson.source_weights, self.loss_crossEntropy)
             real_loss, _ = bce_loss_multiSource(discriminator_reals, ones,self.confjson.source_weights, self.loss_crossEntropy)
