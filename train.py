@@ -12,6 +12,11 @@ from utils.config import Configuration
 import settings 
 from torch import nn 
 
+def my_collate(batch):
+    batch = list(filter(lambda x: not torch.any(torch.isnan(x[1])) , batch))
+    return torch.utils.data.dataloader.default_collate(batch)
+
+  
 settings.init()
 confjson = Configuration.load_json('conf.json')
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -20,7 +25,6 @@ nr_sources = len(settings.sources_names)
 torch.manual_seed(0)
 np.random.seed(0)
 random.seed(0)
-
 output_validation =  confjson.output_validation
 output_train =  confjson.output_train
 
@@ -49,7 +53,8 @@ train_iter = DataLoader(train_data,
                         num_workers = confjson.num_workers, 
                         worker_init_fn=seed_worker,
                         generator=g,
-                        pin_memory = True,
+                        pin_memory = False,
+                        collate_fn=my_collate
 )
 val_iter = DataLoader(val_data,
                       batch_size = 24,
@@ -57,7 +62,8 @@ val_iter = DataLoader(val_data,
                       num_workers = 4,
                       worker_init_fn=seed_worker,
                       generator=g,
-                      pin_memory = True)
+                      pin_memory = False,
+                      collate_fn=my_collate)
 print('Created the train and validation itertors with size {}, {}'.format(len(train_data), len(val_data)))
 train_GAN(discriminator,
             generator, 
