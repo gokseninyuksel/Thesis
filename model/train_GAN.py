@@ -49,7 +49,7 @@ def train_GAN_step(discriminator,generator,
                     discriminator,generator,
                     optimizer_discriminator,
                     loss_crossEntropy,
-                    device = device, mixed_precision = mixed_precision, 
+                    device = device, 
                     source_weights = source_weights, nr_sources = nr_sources)
     
     acc_loss_discriminator_fake += loss_discriminator_fake.detach()
@@ -83,7 +83,6 @@ def train_GAN_step(discriminator,generator,
                     discriminator,generator,
                     optimizer_discriminator,
                     loss_crossEntropy,
-                    mixed_precision = mixed_precision,
                    device = device, source_weights = source_weights, nr_sources = nr_sources)
     # if counter_val % 10 == 0:
       # plot_random_sample(generator,'Validation' , X_batch,y_batch,counter_val,'log')

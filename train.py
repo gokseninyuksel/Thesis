@@ -15,7 +15,7 @@ from torch import nn
 settings.init()
 confjson = Configuration.load_json('conf.json')
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-source_weights = confjson.sources_weights
+source_weights = confjson.source_weights
 nr_sources = len(settings.sources_names)
 torch.manual_seed(0)
 np.random.seed(0)
@@ -30,6 +30,7 @@ generator = Implicit(baseline = confjson.baseline_generator,
                      dummy_conv_size =  confjson.dummy_generator,
                      mode = confjson.mode)
 print("U_NET with mode {}".format(generator.mode))
+print("Using Mixed Precision:{}".format(confjson.mixed_precision))
 discriminator = Discriminator(in_channels = 1, baseline = confjson.baseline_discriminator,nr_sources = nr_sources)
 if torch.cuda.device_count() > 1:
   print("Let's use", torch.cuda.device_count(), "GPUs!")
