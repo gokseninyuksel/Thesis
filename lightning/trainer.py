@@ -28,7 +28,6 @@ class SVSGAN(pl.LightningModule):
         self.loss_crossEntropy = nn.BCEWithLogitsLoss()
         self.generator.apply(weights_init_)
         self.discriminator.apply(weights_init_)
-        self.automatic_optimization = False
     def forward(self,X_batch):
         spec_inp = X_batch[:,:1,:,:]
         return spec_inp
@@ -37,7 +36,7 @@ class SVSGAN(pl.LightningModule):
     # ---------------------
     # TRAINING STEP
     # ---------------------
-    def training_step(self,batch,batch_idx,optimizer_idx):
+    def training_step(self,batch,batch_idx, optimizer_idx):
         print("Traning Step")
         X_batch,y_batch = batch 
         spec_inp = X_batch[:,:1,:,:]
@@ -142,13 +141,8 @@ class SVSGAN(pl.LightningModule):
                                                                 patience  = 10,
                                                                 threshold=0.001,
                                                                 verbose = True)
-        return [optimizer_discriminator, optimizer_generator], [scheduler]
-
-    def training_epoch_end(self, outputs):
-        sch = self.lr_schedulers()
-        # If the selected scheduler is a ReduceLROnPlateau scheduler.
-        if isinstance(sch, torch.optim.lr_scheduler.ReduceLROnPlateau):
-            sch.step(self.trainer.callback_metrics["validation_gan_loss"])
+        lr_schedulers = {"scheduler": scheduler, "monitor": "validation_gan_loss"}
+        return [optimizer_discriminator, optimizer_generator], lr_schedulers
     def train_dataloader(self):
         train_data = LazyDataset(path = self.confjson.output_train,
                                  is_train = True,

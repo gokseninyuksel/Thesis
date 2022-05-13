@@ -18,5 +18,5 @@
     "epoch" : 100,
     "generator_weight": "...",
     "discriminator_weight": "...",
-    "gpus" : 1
+    "gpus" : 0
   }
