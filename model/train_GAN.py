@@ -146,6 +146,3 @@ def train_GAN(discriminator,generator,
     torch.save(discriminator.state_dict(),  confjson.discriminator_weight.format(epoch + 1))
     gc.collect()
     torch.cuda.empty_cache()
-    sdrs = compute_eval_scores(generator,test_iter,device,mode = 'new')
-    for id,sdr in enumerate(sdrs):
-      print("Median SDR for {} is : {}".format(settings.sources_names[id], sdr))

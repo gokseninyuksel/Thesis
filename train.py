@@ -11,6 +11,18 @@ import random
 from utils.config import Configuration
 import settings 
 from torch import nn 
+import atexit
+from utils.evaluation import compute_eval_scores
+
+
+def exit_handler():
+  sds_val = compute_eval_scores(generator, val_iter,device)
+  sds_t = compute_eval_scores(generator,test_iter, device)
+  for val,test in zip(sds_val,sds_t):
+    print(np.median(val), np.median(test))
+atexit.register(exit_handler)
+
+
 
 def my_collate(batch):
     batch = list(filter(lambda x: not torch.any(torch.isnan(x[1])) , batch))
@@ -27,7 +39,7 @@ np.random.seed(0)
 random.seed(0)
 output_validation =  confjson.output_validation
 output_train =  confjson.output_train
-
+output_test = confjson.output_test
 generator = Implicit(baseline = confjson.baseline_generator,
                      in_channels = 1, 
                      nr_sources = nr_sources, 
@@ -45,6 +57,8 @@ generator.to(device)
 discriminator.to(device)
 train_data = LazyDataset(path = output_train, is_train = True ,sources = settings.sources_names, mode = confjson.mode)
 val_data = LazyDataset(path = output_validation, is_train = False, sources = settings.sources_names, mode = confjson.mode)
+test_data = LazyDataset(path = output_test, is_train = False, sources = settings.sources_names, mode = confjson.mode)
+
 g = torch.Generator()
 g.manual_seed(0)
 train_iter = DataLoader(train_data,
@@ -57,6 +71,14 @@ train_iter = DataLoader(train_data,
                         collate_fn=my_collate
 )
 val_iter = DataLoader(val_data,
+                      batch_size = 24,
+                      shuffle = False, 
+                      num_workers = 4,
+                      worker_init_fn=seed_worker,
+                      generator=g,
+                      pin_memory = False,
+                      collate_fn=my_collate)
+test_iter = DataLoader(test_data,
                       batch_size = 24,
                       shuffle = False, 
                       num_workers = 4,
