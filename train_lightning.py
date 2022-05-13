@@ -4,6 +4,11 @@ from utils.config import Configuration
 import settings 
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.utilities.seed import seed_everything
+import torch 
+
+torch.manual_seed(0)
+seed_everything(0)
 
 settings.init()
 jsonconfig = Configuration.load_json('conf.json')
@@ -23,6 +28,4 @@ trainer = Trainer(gpus=jsonconfig.gpus,
                   progress_bar_refresh_rate=20,
                   logger=logger
                    )
-
-print("Initiated Trainig")
 trainer.fit(model)
