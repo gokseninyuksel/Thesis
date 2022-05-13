@@ -37,12 +37,12 @@ class SVSGAN(pl.LightningModule):
     # TRAINING STEP
     # ---------------------
     def training_step(self,batch,batch_idx, optimizer_idx):
-        print("Traning Step")
         X_batch,y_batch = batch 
         spec_inp = X_batch[:,:1,:,:]
         spec_target = y_batch[:,:settings.nr_sources,:,:]
         # Train Generator
         if optimizer_idx == 0:
+            print("Training Generator")
             outputs = self.generator(spec_inp) if self.confjson.mode == 'implicit' else torch.multiply(self.generator(spec_inp),spec_inp)
             discriminator_fakes = self.discriminator(spec_inp, outputs)
             fakes = torch.ones(discriminator_fakes.shape)
@@ -57,13 +57,14 @@ class SVSGAN(pl.LightningModule):
             self.log('training_l2_loss', l2_loss)
             return gan_loss
         if optimizer_idx == 1:
+            print("Training Discriminator")
             fakes = self.generator(spec_inp) if self.confjson.mode == 'implicit' else torch.multiply(self.generator(spec_inp),spec_inp)
             discriminator_fakes = self.discriminator(spec_inp, fakes.detach())
             discriminator_reals = self.discriminator(spec_inp, spec_target)
             # Calculate BCELoss Fake for multi source
-            zeros = torch.zeros(discriminator_fakes.shape)
+            zeros = torch.zeros(discriminator_fakes.shape,requires_grad = True)
             zeros = zeros.type_as(X_batch)
-            ones = torch.ones(discriminator_fakes.shape)
+            ones = torch.ones(discriminator_fakes.shape, requires_grad = True)
             ones = ones.type_as(X_batch)
             fake_loss, _ = bce_loss_multiSource(discriminator_fakes, zeros,self.confjson.source_weights, self.loss_crossEntropy)
             real_loss, _ = bce_loss_multiSource(discriminator_reals, ones,self.confjson.source_weights, self.loss_crossEntropy)
@@ -75,7 +76,6 @@ class SVSGAN(pl.LightningModule):
     #  VALIDATION STEP
     # ---------------------
     def validation_step(self, batch, batch_idx):
-        print("Validation Step")
         X_batch,y_batch = batch 
         spec_inp = X_batch[:,:1,:,:]
         spec_target = y_batch[:,:settings.nr_sources,:,:]
