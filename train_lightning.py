@@ -56,4 +56,4 @@ trainer = Trainer(gpus=jsonconfig.gpus,
                   max_epochs=jsonconfig.epoch, progress_bar_refresh_rate=20)
 
 print("Initiated Trainig")
-trainer.fit(model,train_iter,val_iter,test_iter)
+trainer.fit(model,train_iter,val_iter)
