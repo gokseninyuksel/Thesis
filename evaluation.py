@@ -5,13 +5,13 @@ from utils.utils import combine_magnitude_phase, compute_sdr
 import numpy as np 
 from mir_eval.separation import bss_eval_sources
 import sys
-from model import UNet as Net
+from model.UNet import UNet as Net
 from utils.config import Configuration
 from torch.utils.data import DataLoader
 from utils.utils import seed_worker
 from dataloader.LazyDataset import LazyDataset
-confjson = Configuration.load_json('conf.json')
 
+confjson = Configuration.load_json('conf.json')
 def my_collate(batch):
     batch = list(filter(lambda x: not torch.any(torch.isnan(x[1])) , batch))
     return torch.utils.data.dataloader.default_collate(batch)
@@ -46,13 +46,16 @@ def compute_eval_scores(net,data,device, mode = 'new'):
     return sdr
 
 if __name__ == "__main__":
+  settings.init()
+  g = torch.Generator()
+  g.manual_seed(0)
   device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
   generator = Net(baseline = confjson.baseline_generator,
                      in_channels = 1, 
                      nr_sources = settings.nr_sources, 
                      dummy_conv_size =  confjson.dummy_generator,
-                     mode = confjson.mode)
-  generator.load_state_dict(torch.load(sys.argv[0]))
+                     mode = confjson.mode).to(device)
+  generator.load_state_dict(torch.load(sys.argv[1]))
   val_data = LazyDataset(path = confjson.output_validation, is_train = False, sources = settings.sources_names, mode = confjson.mode)
   test_data = LazyDataset(path = confjson.output_test, is_train = False, sources = settings.sources_names, mode = confjson.mode)
   val_iter = DataLoader(val_data,
@@ -63,7 +66,7 @@ if __name__ == "__main__":
                       generator=g,
                       pin_memory = False,
                       collate_fn=my_collate)
-test_iter = DataLoader(test_data,
+  test_iter = DataLoader(test_data,
                       batch_size = 24,
                       shuffle = False, 
                       num_workers = 4,
@@ -71,7 +74,9 @@ test_iter = DataLoader(test_data,
                       generator=g,
                       pin_memory = False,
                       collate_fn=my_collate)
-sdrs_validation = compute_eval_scores(generator,val_iter,device, mode = sys.argv[1])
-sdrs_test = compute_eval_scores(generator,test_iter, device, mode = sys.argv[1])
-for id,(val,test) in enumerate(zip(sdrs_validation,sdrs_test)):
-  print("For source {}, \n sdr validation is: {} \n sdr test is:".format(confjson.source_names[id],val,test))
+  print("Successfuly initiated the weights")
+  print("Computing SDRs for validation and test")
+  sdrs_validation = compute_eval_scores(generator,val_iter,device, mode = sys.argv[2])
+  sdrs_test = compute_eval_scores(generator,test_iter, device, mode = sys.argv[2])
+  for id,(val,test) in enumerate(zip(sdrs_validation,sdrs_test)):
+    print("For source {}, \n sdr validation is: {} \n sdr test is:".format(confjson.source_names[id],val,test))
