@@ -77,6 +77,8 @@ if __name__ == "__main__":
   print("Successfuly initiated the weights")
   print("Computing SDRs for validation and test")
   sdrs_validation = compute_eval_scores(generator,val_iter,device, mode = sys.argv[2])
+  print('Computed Sdrs for validation')
   sdrs_test = compute_eval_scores(generator,test_iter, device, mode = sys.argv[2])
+  print('Computed Sdrs for test')
   for id,(val,test) in enumerate(zip(sdrs_validation,sdrs_test)):
-    print("For source {}, \n sdr validation is: {} \n sdr test is:".format(confjson.source_names[id],val,test))
+    print("For source {}, \n sdr validation is: {} \n sdr test is: {}".format(confjson.source_names[id],np.median(val),np.median(test)))

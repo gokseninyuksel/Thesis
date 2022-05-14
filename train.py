@@ -12,7 +12,7 @@ from utils.config import Configuration
 import settings 
 from torch import nn 
 import atexit
-from utils.evaluation import compute_eval_scores
+from evaluation import compute_eval_scores
 
 
 def exit_handler():
