@@ -3,11 +3,11 @@ import torch
 from model.generator_train import train_generator,test_generator
 from model.discriminator_train import train_discriminator,test_discriminator
 from torch import nn
-import tqdm.notebook as tqdm 
+import tqdm as tqdm 
 import gc 
 from utils.config import Configuration
 import settings 
-from utils.evaluation import compute_eval_scores
+
 confjson = Configuration.load_json('conf.json')
 
 def train_GAN_step(discriminator,generator,
