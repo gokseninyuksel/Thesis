@@ -9,7 +9,7 @@ import random
 torch.manual_seed(0)
 np.random.seed(0)
 random.seed(0)
-def spectrogram(self,stft_array,sampling_rate, scale = 'linear', hop_length = 256, ax = None):
+def spectrogram(stft_array,sampling_rate, scale = 'linear', hop_length = 256, ax = None):
     """
     Function for displaying the spectrogram. It is expected that if torch tensor is passed, shape is (1,n,m) else (n,m)
 
@@ -27,7 +27,7 @@ def spectrogram(self,stft_array,sampling_rate, scale = 'linear', hop_length = 25
     else:
       img = librosa.display.specshow(stft_array,sr = sampling_rate, x_axis = 'time',hop_length = hop_length, y_axis = scale,cmap ='RdBu_r')
       plt.colorbar()
-def plot_wave(self,wave,sampling_rate,ax = None):
+def plot_wave(wave,sampling_rate,ax = None):
     '''
     Display the time series wave
     '''
@@ -35,17 +35,17 @@ def plot_wave(self,wave,sampling_rate,ax = None):
       librosa.display.waveshow(y = wave, x_axis = 'time', sr = sampling_rate, ax = ax)
     else:
       librosa.display.waveshow(y = wave, sr = sampling_rate, x_axis = 'time')
-def play_audio(self,audio,sampling_rate):
+def play_audio(audio,sampling_rate):
     '''
     Play the specified audio with specified sampling_rate
     '''
     return Audio(audio, rate = sampling_rate)
-def stft_magnitude(self,stft):
+def stft_magnitude(stft):
     '''
     Calculate the stft_magnitude
     '''
     return torch.tensor(np.abs(stft))
-def stft_angle(self,stft):
+def stft_angle(stft):
     '''
     Calculate the stft_angle
     '''
