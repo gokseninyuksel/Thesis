@@ -4,6 +4,14 @@ import librosa
 from utils.utils import combine_magnitude_phase, compute_sdr
 import numpy as np 
 from mir_eval.separation import bss_eval_sources
+import argparse
+ 
+parser = argparse.ArgumentParser(description="Evaluating the pre-trained model",
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument("-g", "--generator", action="store_true", help="generator weights")
+parser.add_argument("-d", "--discriminator", action="store_true", help="discriminator weights")
+parser.add_argument("-m", "--method", help="New or old method for calculating SDR")
+args = parser.parse_args()
 
 def compute_eval_scores(net,data,device, mode = 'new'):
     net.eval()
@@ -13,7 +21,7 @@ def compute_eval_scores(net,data,device, mode = 'new'):
       with torch.no_grad():
         X_sampled,y_sampled = X_sampled.to(device),y_sampled.to(device)
         # Convert sample to float32, otherwise it is not compatible with the network.
-        X_sampled,y_samped = X_sampled.to(torch.float32), y_sampled.to(torch.float32)
+        X_sampled,y_sampled = X_sampled.to(torch.float32), y_sampled.to(torch.float32)
         X_sampled,y_sampled = X_sampled.detach(), y_sampled.detach()
         target_spec = y_sampled[:,:nr_sources,:,:]
         input_spec = X_sampled[:,:1,:,:]
@@ -33,3 +41,6 @@ def compute_eval_scores(net,data,device, mode = 'new'):
             sdr_eval= compute_sdr(y_audio,pred_audio) if mode == 'new' else bss_eval_sources(y_audio,pred_audio)
             sdr[id].append(sdr_eval)
     return sdr
+
+if __name__ == "__main__":
+  print(args)
