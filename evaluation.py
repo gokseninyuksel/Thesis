@@ -30,7 +30,7 @@ def compute_eval_scores(net,data,device, mode = 'new'):
         input_spec = X_sampled[:,:1,:,:]
         target_phase = y_sampled[:,nr_sources:,:,:]
         input_phase = X_sampled[:,1:,:,:]
-        y_hat = net(input_spec).detach()
+        y_hat = net(input_spec).detach() if confjson.mode == 'implicit' else torch.multiply(net(input_spec).detach(), input_spec)
 
       for index in range(X_sampled.shape[0]):
         for id, sources in enumerate(settings.sources_names):
