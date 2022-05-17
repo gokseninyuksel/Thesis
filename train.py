@@ -13,6 +13,7 @@ import settings
 from torch import nn 
 import atexit
 from evaluation import compute_eval_scores
+
 torch.manual_seed(0)
 random.seed(0)
 np.random.seed(0)
@@ -48,16 +49,11 @@ print("U_NET with mode {}".format(generator.mode))
 print("Using Mixed Precision:{}".format(confjson.mixed_precision))
 print("Training on sources: {}".format(confjson.source_names))
 discriminator = Discriminator(in_channels = 1, baseline = confjson.baseline_discriminator,nr_sources = nr_sources)
-if torch.cuda.device_count() > 1:
-  print("Let's use", torch.cuda.device_count(), "GPUs!")
-  generator = nn.DataParallel(generator)
-  discriminator = nn.DataParallel(discriminator)
 generator.to(device)
 discriminator.to(device)
 train_data = LazyDataset(path = output_train, is_train = True ,sources = settings.sources_names, mode = confjson.mode)
 val_data = LazyDataset(path = output_validation, is_train = False, sources = settings.sources_names, mode = confjson.mode)
 test_data = LazyDataset(path = output_test, is_train = False, sources = settings.sources_names, mode = confjson.mode)
-
 g = torch.Generator()
 g.manual_seed(0)
 train_iter = DataLoader(train_data,
