@@ -81,6 +81,13 @@ def compute_sdr(ref,est):
     '''
     ratio = np.sum(ref**2) / np.sum((ref-est)**2)
     return 10*np.log10(ratio + 1e-10)
+def compute_sdr_(ref,est):
+    '''
+    Compute the sdr from reference and estimated source. Pytorch
+    returns the sdr in DB.
+    '''
+    ratio = torch.sum(ref**2) / torch.sum((ref-est)**2)
+    return 10*torch.log10(ratio + 1e-10)
 def seed_worker(worker_id):
     worker_seed = torch.initial_seed() % 2**32
     np.random.seed(worker_seed)

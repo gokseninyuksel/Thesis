@@ -3,7 +3,7 @@ import torch
 from model.multiSourceLoss import bce_loss_multiSource, l2_loss_multiSource
 import settings
 from utils.config import Configuration
-from utils.utils import compute_sdr
+from utils.utils import compute_sdr_
 confjson = Configuration.load_json('conf.json')
 def train_generator(X_batch,y_batch,discriminator,generator,
                     optimizer_generator,
@@ -34,7 +34,8 @@ def train_generator(X_batch,y_batch,discriminator,generator,
       # Calculate L2Loss for multi source
       l2_loss,source_losses_l2 = l2_loss_multiSource(outputs,spec_target,source_weights,loss_L2)
       gan_loss = bce_loss + alpha * l2_loss
-      sdr_generator = compute_sdr(spec_target,outputs).detach()
+      print(spec_target, outputs)
+      sdr_generator = compute_sdr_(spec_target,outputs).detach()
     # Back-propagate the loss
     settings.scaler.scale(gan_loss).backward()
     # Update weights
@@ -45,7 +46,7 @@ def train_generator(X_batch,y_batch,discriminator,generator,
     settings.scaler.update()
 
 
-    return loss_generator_L2, loss_generator_BCE, loss_generator_GAN, source_losses_l2,sdr_generator
+    return loss_generator_L2, loss_generator_BCE, loss_generator_GAN, source_losses_l2,sdr_generator.item()
 
 def test_generator(X_batch,y_batch,discriminator,generator,
                     optimizer_generator,
@@ -69,5 +70,5 @@ def test_generator(X_batch,y_batch,discriminator,generator,
           loss_generator_L2 = l2_loss.detach()
           loss_generator_BCE = bce_loss.detach()
           loss_generator_GAN = gan_loss.detach()
-          sdr_generator = compute_sdr(spec_target,outputs).detach()
-    return loss_generator_L2, loss_generator_BCE, loss_generator_GAN,source_losses_l2,sdr_generator
+          sdr_generator = compute_sdr_(spec_target,outputs).detach()
+    return loss_generator_L2, loss_generator_BCE, loss_generator_GAN,source_losses_l2,sdr_generator.item()
