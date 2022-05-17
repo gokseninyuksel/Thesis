@@ -10,6 +10,7 @@ import settings
 from utils.utils import weights_init_, set_momentum
 import random
 import numpy as np
+from utils.utils import compute_sdr
 confjson = Configuration.load_json('conf.json')
 
 torch.manual_seed(0)
@@ -30,6 +31,7 @@ def train_GAN_step(discriminator,generator,
   acc_loss_discriminator_fake, acc_loss_discriminator_real, acc_loss_discriminator_total = 0,0,0
   acc_loss_generator_test_L2, acc_loss_generator_test_BCE, acc_loss_generator_test_GAN = 0,0,0
   acc_loss_discriminator_test_fake, acc_loss_discriminator_test_real, acc_loss_discriminator_test_total = 0,0,0
+  acc_sdr_train, acc_sdr_test = 0,0
   source_losses_train_acc = 0
   source_losses_test_acc = 0
   len_train = 0
@@ -38,7 +40,7 @@ def train_GAN_step(discriminator,generator,
   for X_batch,y_batch in train_iter:
     X_batch, y_batch = X_batch.to(torch.float32), y_batch.to(torch.float32)
     X_batch,y_batch = X_batch.to(device), y_batch.to(device)
-    loss_generator_train_L2, loss_generator_train_BCE, loss_generator_train_GAN,source_losses_train =  train_generator(
+    loss_generator_train_L2, loss_generator_train_BCE, loss_generator_train_GAN,source_losses_train,sdr_train=  train_generator(
                     X_batch,y_batch,
                     discriminator,generator,
                     optimizer_generator,
@@ -48,6 +50,7 @@ def train_GAN_step(discriminator,generator,
     acc_loss_generator_train_L2 += loss_generator_train_L2.detach()
     acc_loss_generator_train_BCE += loss_generator_train_BCE.detach()
     acc_loss_generator_train_GAN += loss_generator_train_GAN.detach()
+    acc_sdr_train += sdr_train
     settings.counter_train += 1
     settings.writer.add_scalar("Training Generator GAN Loss Step",loss_generator_train_GAN/X_batch.shape[0], settings.counter_train) 
     # Train the Discriminator
@@ -72,7 +75,7 @@ def train_GAN_step(discriminator,generator,
   for X_batch,y_batch in val_iter:
     X_batch, y_batch = X_batch.to(torch.float32), y_batch.to(torch.float32)
     X_batch,y_batch = X_batch.to(device).detach(), y_batch.to(device).detach()
-    loss_generator_test_L2, loss_generator_test_BCE, loss_generator_test_GAN,source_losses_test =  test_generator(
+    loss_generator_test_L2, loss_generator_test_BCE, loss_generator_test_GAN,source_losses_test, sdr_test =  test_generator(
                     X_batch,y_batch, 
                     discriminator,generator,
                     optimizer_generator,
@@ -82,6 +85,7 @@ def train_GAN_step(discriminator,generator,
     acc_loss_generator_test_BCE += loss_generator_test_BCE
     acc_loss_generator_test_GAN += loss_generator_test_GAN
     source_losses_test_acc = source_losses_test+ source_losses_test_acc
+    acc_sdr_test += sdr_test
     settings.counter_val += 1
     settings.writer.add_scalar("Validation Generator GAN Loss Step",loss_generator_test_GAN/X_batch.shape[0], settings.counter_val) 
     # Test the Discriminator
@@ -107,6 +111,7 @@ def train_GAN_step(discriminator,generator,
   settings.writer.add_scalar("Training Discriminator Fake Loss", acc_loss_discriminator_fake / len_train, epoch)
   settings.writer.add_scalar("Training Discriminator Real Loss", acc_loss_discriminator_real / len_train, epoch)
   settings.writer.add_scalar("Training Discriminator Total Loss", acc_loss_discriminator_total / len_train, epoch) 
+  settings.writer.add_scalar("Trainind Generator SDR",  acc_sdr_train / len_train , epoch)
   for source_index in range(nr_sources):
     settings.writer.add_scalar(f"Validation Generator {settings.sources_names[source_index]} L2 Loss", source_losses_test_acc[source_index]/ len_val, epoch)
   settings.writer.add_scalar("Validation Generator L2 Loss", acc_loss_generator_test_L2 / len_val, epoch)
@@ -115,6 +120,7 @@ def train_GAN_step(discriminator,generator,
   settings.writer.add_scalar("Validation Discriminator Fake Loss", acc_loss_discriminator_test_fake / len_val, epoch)
   settings.writer.add_scalar("Validation Discriminator Real Loss", acc_loss_discriminator_test_real / len_val, epoch)
   settings.writer.add_scalar("Validation Discriminator Total Loss", acc_loss_discriminator_test_total / len_val, epoch) 
+  settings.writer.add_scalar("Validation Generator SDR",  acc_sdr_test / len_train , epoch)
 
 
 def train_GAN(discriminator,generator, 
