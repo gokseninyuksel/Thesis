@@ -65,7 +65,7 @@ if __name__ == "__main__":
                       worker_init_fn=seed_worker,
                       generator=g,
                       pin_memory = False,
-                      collate_fn=my_collate)
+                      collate_fn=my_collate if confjson.filter_nan else None)
   test_iter = DataLoader(test_data,
                       batch_size = 24,
                       shuffle = False, 
@@ -73,7 +73,8 @@ if __name__ == "__main__":
                       worker_init_fn=seed_worker,
                       generator=g,
                       pin_memory = False,
-                      collate_fn=my_collate)
+                      collate_fn=my_collate if confjson.filter_nan else None)
+
   print("Successfuly initiated the weights")
   print("Computing SDRs for validation and test")
   sdrs_validation = compute_eval_scores(generator,val_iter,device, mode = sys.argv[2])
