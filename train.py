@@ -5,10 +5,10 @@ from model.train_GAN import train_GAN
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard.writer import SummaryWriter
-from utils.utils import seed_worker
 import numpy as np 
 import random
 from utils.config import Configuration
+from utils.utils import weights_init_, set_momentum,seed_worker
 import settings 
 from torch import nn 
 import atexit
@@ -86,6 +86,10 @@ test_iter = DataLoader(test_data,
                       pin_memory = False,
                       collate_fn=my_collate if confjson.filter_nan else None)
 print('Created the train and validation itertors with size {}, {}'.format(len(train_data), len(val_data)))
+generator.apply(weights_init_)
+discriminator.apply(weights_init_)
+set_momentum(generator,0.1)
+set_momentum(discriminator,0.1)
 train_GAN(discriminator,
             generator, 
             train_iter,

@@ -146,10 +146,7 @@ def train_GAN(discriminator,generator,
                                                          patience  = 10,
                                                          threshold=0.001,
                                                          verbose = True)
-  generator.apply(weights_init_)
-  discriminator.apply(weights_init_)
-  set_momentum(generator,0.1)
-  set_momentum(discriminator,0.1)
+
   for epoch in tqdm.tqdm(range(nr_epochs)):
     train_GAN_step(discriminator,generator,
                    optimizer_discriminator, optimizer_generator,
