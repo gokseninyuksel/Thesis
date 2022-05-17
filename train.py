@@ -68,7 +68,7 @@ train_iter = DataLoader(train_data,
                         worker_init_fn=seed_worker,
                         generator=g,
                         pin_memory = False,
-                        collate_fn=my_collate
+                        collate_fn=my_collate if confjson.filter_nan else None
 )
 val_iter = DataLoader(val_data,
                       batch_size = 24,
@@ -77,7 +77,7 @@ val_iter = DataLoader(val_data,
                       worker_init_fn=seed_worker,
                       generator=g,
                       pin_memory = False,
-                      collate_fn=my_collate)
+                      collate_fn=my_collate if confjson.filter_nan else None)
 test_iter = DataLoader(test_data,
                       batch_size = 24,
                       shuffle = False, 
@@ -85,7 +85,7 @@ test_iter = DataLoader(test_data,
                       worker_init_fn=seed_worker,
                       generator=g,
                       pin_memory = False,
-                      collate_fn=my_collate)
+                      collate_fn=my_collate if confjson.filter_nan else None)
 print('Created the train and validation itertors with size {}, {}'.format(len(train_data), len(val_data)))
 train_GAN(discriminator,
             generator, 
