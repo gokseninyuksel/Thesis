@@ -34,7 +34,6 @@ def train_generator(X_batch,y_batch,discriminator,generator,
       # Calculate L2Loss for multi source
       l2_loss,source_losses_l2 = l2_loss_multiSource(outputs,spec_target,source_weights,loss_L2)
       gan_loss = bce_loss + alpha * l2_loss
-      print(spec_target, outputs)
       sdr_generator = compute_sdr_(spec_target,outputs).detach()
     # Back-propagate the loss
     settings.scaler.scale(gan_loss).backward()
