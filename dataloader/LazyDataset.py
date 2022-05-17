@@ -5,7 +5,11 @@ import torch
 import numpy as np
 from utils.utils import load_numpy,soft_mask
 import glob 
+import random
 
+torch.manual_seed(0)
+random.seed(0)
+np.random.seed(0)
 class LazyDataset(Dataset):
   def __init__(self,path, is_train = True, sources = ['vocals','drums'], mode = 'explicit'):
     '''

@@ -8,7 +8,14 @@ import gc
 from utils.config import Configuration
 import settings 
 from utils.utils import weights_init_, set_momentum
+import random
+import numpy as np
 confjson = Configuration.load_json('conf.json')
+
+torch.manual_seed(0)
+random.seed(0)
+np.random.seed(0)
+
 
 def train_GAN_step(discriminator,generator,
                    optimizer_discriminator, optimizer_generator,

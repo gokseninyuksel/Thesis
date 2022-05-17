@@ -13,7 +13,9 @@ import settings
 from torch import nn 
 import atexit
 from evaluation import compute_eval_scores
-
+torch.manual_seed(0)
+random.seed(0)
+np.random.seed(0)
 
 def exit_handler():
   sds_val = compute_eval_scores(generator, val_iter,device)
@@ -34,9 +36,6 @@ confjson = Configuration.load_json('conf.json')
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 source_weights = confjson.source_weights
 nr_sources = len(settings.sources_names)
-torch.manual_seed(0)
-np.random.seed(0)
-random.seed(0)
 output_validation =  confjson.output_validation
 output_train =  confjson.output_train
 output_test = confjson.output_test
