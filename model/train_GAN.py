@@ -11,13 +11,8 @@ from utils.utils import weights_init_, set_momentum
 import random
 import numpy as np
 from utils.utils import compute_sdr
+
 confjson = Configuration.load_json('conf.json')
-
-torch.manual_seed(0)
-random.seed(0)
-np.random.seed(0)
-
-
 def train_GAN_step(discriminator,generator,
                    optimizer_discriminator, optimizer_generator,
                    loss_crossEntropy,loss_L2,
