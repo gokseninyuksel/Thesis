@@ -26,11 +26,11 @@ def train_GAN_step(discriminator,generator,
   acc_loss_discriminator_fake, acc_loss_discriminator_real, acc_loss_discriminator_total = 0,0,0
   acc_loss_generator_test_L2, acc_loss_generator_test_BCE, acc_loss_generator_test_GAN = 0,0,0
   acc_loss_discriminator_test_fake, acc_loss_discriminator_test_real, acc_loss_discriminator_test_total = 0,0,0
-  acc_sdr_train, acc_sdr_test = 0,0
+  acc_sdr_train, acc_sdr_test = torch.zeros(len((train_iter.dataset))),torch.zeros(len((val_iter.dataset)))
   source_losses_train_acc = 0
   source_losses_test_acc = 0
-  len_train = 0
-  len_val = 0
+  len_train = len((train_iter.dataset))
+  len_val = len((val_iter.dataset))
   # Train the Generator
   for X_batch,y_batch in train_iter:
     X_batch, y_batch = X_batch.to(torch.float32), y_batch.to(torch.float32)
@@ -45,7 +45,7 @@ def train_GAN_step(discriminator,generator,
     acc_loss_generator_train_L2 += loss_generator_train_L2.detach()
     acc_loss_generator_train_BCE += loss_generator_train_BCE.detach()
     acc_loss_generator_train_GAN += loss_generator_train_GAN.detach()
-    acc_sdr_train += sdr_train
+    sdr_train[settings.counter_train] = sdr_train
     settings.counter_train += 1
     settings.writer.add_scalar("Training Generator GAN Loss Step",loss_generator_train_GAN/X_batch.shape[0], settings.counter_train) 
     # Train the Discriminator
@@ -61,7 +61,6 @@ def train_GAN_step(discriminator,generator,
     acc_loss_discriminator_fake += loss_discriminator_fake.detach()
     acc_loss_discriminator_real += loss_discriminator_real.detach()
     acc_loss_discriminator_total  += loss_discriminator_total.detach()
-    len_train += X_batch.detach().shape[0]
     # if counter_train % 20 == 0:
     #   plot_random_sample(generator,'Training' ,  X_batch,y_batch,counter_train,'log')
   discriminator.eval()
@@ -95,8 +94,7 @@ def train_GAN_step(discriminator,generator,
     acc_loss_discriminator_test_fake += loss_discriminator_test_fake
     acc_loss_discriminator_test_real += loss_discriminator_test_real
     acc_loss_discriminator_test_total += loss_discriminator_test_total
-    len_val += X_batch.shape[0]
-  
+    sdr_test[settings.counter_val] = sdr_test
   scheduler.step(acc_loss_generator_test_L2 / len_val)
   for source_index in range(nr_sources):
     settings.writer.add_scalar(f"Training Generator {settings.sources_names[source_index]} L2 Loss", source_losses_train_acc[source_index]/ len_train, epoch)
@@ -106,7 +104,7 @@ def train_GAN_step(discriminator,generator,
   settings.writer.add_scalar("Training Discriminator Fake Loss", acc_loss_discriminator_fake / len_train, epoch)
   settings.writer.add_scalar("Training Discriminator Real Loss", acc_loss_discriminator_real / len_train, epoch)
   settings.writer.add_scalar("Training Discriminator Total Loss", acc_loss_discriminator_total / len_train, epoch) 
-  settings.writer.add_scalar("Trainind Generator SDR",  acc_sdr_train / len_train , epoch)
+  settings.writer.add_scalar("Trainind Generator SDR",  torch.median(sdr_train) , epoch)
   for source_index in range(nr_sources):
     settings.writer.add_scalar(f"Validation Generator {settings.sources_names[source_index]} L2 Loss", source_losses_test_acc[source_index]/ len_val, epoch)
   settings.writer.add_scalar("Validation Generator L2 Loss", acc_loss_generator_test_L2 / len_val, epoch)
@@ -115,7 +113,7 @@ def train_GAN_step(discriminator,generator,
   settings.writer.add_scalar("Validation Discriminator Fake Loss", acc_loss_discriminator_test_fake / len_val, epoch)
   settings.writer.add_scalar("Validation Discriminator Real Loss", acc_loss_discriminator_test_real / len_val, epoch)
   settings.writer.add_scalar("Validation Discriminator Total Loss", acc_loss_discriminator_test_total / len_val, epoch) 
-  settings.writer.add_scalar("Validation Generator SDR",  acc_sdr_test / len_train , epoch)
+  settings.writer.add_scalar("Validation Generator SDR",  acc_sdr_test / len_val , epoch)
 
 
 def train_GAN(discriminator,generator, 
