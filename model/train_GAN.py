@@ -79,7 +79,7 @@ def train_GAN_step(discriminator,generator,
     acc_loss_generator_test_BCE += loss_generator_test_BCE
     acc_loss_generator_test_GAN += loss_generator_test_GAN
     source_losses_test_acc = source_losses_test+ source_losses_test_acc
-    acc_sdr_test += sdr_test
+    sdr_test[settings.counter_val] = sdr_test
     settings.counter_val += 1
     settings.writer.add_scalar("Validation Generator GAN Loss Step",loss_generator_test_GAN/X_batch.shape[0], settings.counter_val) 
     # Test the Discriminator
@@ -94,7 +94,6 @@ def train_GAN_step(discriminator,generator,
     acc_loss_discriminator_test_fake += loss_discriminator_test_fake
     acc_loss_discriminator_test_real += loss_discriminator_test_real
     acc_loss_discriminator_test_total += loss_discriminator_test_total
-    sdr_test[settings.counter_val] = sdr_test
   scheduler.step(acc_loss_generator_test_L2 / len_val)
   for source_index in range(nr_sources):
     settings.writer.add_scalar(f"Training Generator {settings.sources_names[source_index]} L2 Loss", source_losses_train_acc[source_index]/ len_train, epoch)
