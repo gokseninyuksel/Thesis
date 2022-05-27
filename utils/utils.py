@@ -50,12 +50,12 @@ def stft_angle(stft):
     Calculate the stft_angle
     '''
     return torch.tensor(np.angle(stft))
-def soft_mask(source,mixture):
+def soft_mask(source,background):
     '''
-    Calculate the soft mask from source and mixture
+    Calculate the soft mask from source and background
     returns the soft mask.
     '''
-    return source / (mixture + 0.0001)
+    return source / (source + background + 0.0001)
 def combine_magnitude_phase(magnitudes, phases):
     '''
     Combine the phase information from the stft array to magnitude information.
